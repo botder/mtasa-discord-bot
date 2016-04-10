@@ -1,0 +1,18 @@
+{
+  /* Introduction to the Discord API and Bots
+     https://discordapp.com/developers/docs/intro
+     You can register a bot for your Discord guild there. */
+
+  // [boolean] Output debug information into the console (default: false)
+  "debug": false,
+
+  // [integer] Port for the MTA resources, which will connect to your bot (default: 24005)
+  "mta_port": 24005,
+
+  // [integer] Port for the REST API, which serves useful information about your bot (default: 24305)
+  "http_port": 24305,
+
+  /* [string] This is the private token for your Discord bot, you can
+     copy this token from your application's App Bot User (https://discordapp.com/developers/applications/me) */
+  "token": "change me"
+}

@@ -77,3 +77,18 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# JetBrains
+# =========================
+
+# .idea folder
+.idea
+
+## File-based project format:
+*.iws
+
+# Project
+# =========================
+
+# Configuration
+config.json
