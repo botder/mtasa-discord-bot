@@ -5,25 +5,32 @@ var getPrefix = function () {
     return '[' + timestamp + '] [MTA]';
 };
 
-var server = require('net').createServer();
+var server = require('net').createServer(),
+    sockets = {};
 
 server.on('connection', function (socket) {
-    socket.setTimeout(30000);
+    // Add socket to socket list
+    var socketID = 0;
+    for (; sockets[socketID] != undefined; ++socketID) { }
+    sockets[socketID] = socket;
 
-    socket.on('end', function () {
-
-    });
+    // Show connection info in console
+    console.log(getPrefix(), 'Socket', socketID, 'opened');
+    socket.setTimeout(10000);
+    socket.write('Handshake\r\n');
 
     socket.on('timeout', function () {
+        console.log(getPrefix(), 'Socket', socketID, 'timed out');
         socket.destroy();
     });
 
     socket.on('close', function () {
-
+        console.log(getPrefix(), 'Socket', socketID, 'closed');
+        delete sockets[socketID];
     });
 
-    socket.on('data', function () {
-
+    socket.on('data', function (data) {
+        console.log(getPrefix(), 'data', data);
     });
 });
 
@@ -41,4 +48,9 @@ exports.start = function (port) {
 
 exports.stop = function (callback) {
     server.close((typeof callback === 'function') ? callback : null);
+
+    for (var socketID in sockets) {
+        if (sockets.hasOwnProperty(socketID))
+            sockets[socketID].destroy();
+    }
 };

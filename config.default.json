@@ -4,7 +4,7 @@
      You can register a bot for your Discord guild there. */
 
   // [boolean] Output debug information into the console (default: false)
-  "debug": false,
+  "debug": true,
 
   // [integer] Port for the MTA resources, which will connect to your bot (default: 24005)
   "mta_port": 24005,
@@ -14,5 +14,15 @@
 
   /* [string] This is the private token for your Discord bot, you can
      copy this token from your application's App Bot User (https://discordapp.com/developers/applications/me) */
-  "token": "change me"
+  "token": "change me",
+
+  // [array] This is the server whitelist array, which should list each whitelisted server ID as string
+  "servers": [],
+
+  // [string] The redirect URI for your application's bot user, you should copy it from the same page as token
+  "redirect_uri": "http://example.org",
+
+  /* [string] This is the account ID of the commander (bot admin), which can access restricted
+     commands exclusively for the commander */
+  "commander": ""
 }

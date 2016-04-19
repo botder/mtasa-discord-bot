@@ -13,7 +13,10 @@ if (config.debug !== true) {
 
 var bot = require('./modules/bot.js');
 bot.start({
-    token: config.token
+    token: config.token,
+    servers: config.servers,
+    commander: config.commander,
+    url: config.redirect_uri
 });
 
 var mta = require('./modules/mta.js');

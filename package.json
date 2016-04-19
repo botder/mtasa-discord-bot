@@ -4,8 +4,8 @@
   "description": "Connects MTA:SA servers and Discord channels by sending messages/commands back and forth",
   "main": "app.js",
   "dependencies": {
-    "discord.js": "^6.1.0",
-    "strip-json-comments": "^2.0.1"
+    "discord.js": "^7.0.1",
+    "strip-json-comments": "*"
   },
   "devDependencies": {},
   "scripts": {
