@@ -29,7 +29,7 @@ class ChatMessageHandler extends Handler {
                 bot.sendMessage(`\\* _${author} ${text}_`);
             else {
                 // Use a zero width space to pad the characters at the end 
-                let fixed = text.replace(/(\s.)\$/m, "$1\u200b");
+                let fixed = text.replace(/(\s.)$/m, "$1\u200b");
                 bot.sendMessage(`\\* *${author} ${fixed}*`);
             }
         }
@@ -39,7 +39,19 @@ class ChatMessageHandler extends Handler {
         }
         else if (type == "chat.message.block") {
             let reason = this.escape(payload.reason || "no reason");
-            bot.sendMessage(`[:x:] **${author}:** *${text}* (${reason})`);
+
+            // TODO: Review in the future
+            // Discord has a nasty inconsistency in his markdown
+            // There have to be two characters at the finishing asterisk for cursive
+            let fixed = false;
+
+            if (text.length == 1)
+                fixed = `_${text}_`;
+            else
+                // Use a zero width space to pad the characters at the end
+                fixed = `*${text.replace(/(\s.)$/m, "$1\u200b")}*`;
+            
+            bot.sendMessage(`[:x:] **${author}:** ${fixed} (${reason})`);
         }
         else if (type == "chat.message.team") {
             if (payload.team)
