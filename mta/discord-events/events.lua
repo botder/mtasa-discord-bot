@@ -57,9 +57,18 @@ addEventHandler("onPlayerChangeNick", root,
 
 addEventHandler("onPlayerChat", root,
     function (message, messageType)
-        if messageType == 1 then
+        if messageType == 0 then
+            exports.discord:send("chat.message.text", { author = getPlayerName(source), text = message })
+        elseif messageType == 1 then
             exports.discord:send("chat.message.action", { author = getPlayerName(source), text = message })
         end
+    end
+)
+
+addEvent("onInterchatMessage")
+addEventHandler("onInterchatMessage", root,
+    function (server, playerName, message)
+        exports.discord:send("chat.message.interchat", { author = playerName:monochrome(), server = server, text = message })
     end
 )
 
