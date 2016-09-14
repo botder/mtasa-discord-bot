@@ -1,0 +1,5 @@
+<meta>
+    <oop>true</oop>
+    <info name="Discord: Events" author="Necktrox" version="1.0.0" type="script" description="Event handler for Discord message transmission"/>
+    <script src="events.lua"/>
+</meta>
