@@ -87,7 +87,12 @@ for (let botconfig of config.bots) {
         bot.sendMessage(`**Bot:** Hello`);
     });
 
-    bot.loginWithToken(botconfig.token);
+    let token = botconfig.token;
+
+    if (!token.startsWith("Bot "))
+        token = `Bot {token}`;
+
+    bot.loginWithToken(token);
 }
 
 server.on("session.ready", (session) => {
