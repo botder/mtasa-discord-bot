@@ -1,0 +1,9 @@
+{
+    "port": 8100,
+    "passphrase": "key",
+    "server": "server.id",
+    "bots": [{
+        "channel": "channel.name",
+        "token": "bot.token"
+    }]
+}
