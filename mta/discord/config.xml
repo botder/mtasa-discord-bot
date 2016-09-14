@@ -1,0 +1,6 @@
+<discord>
+    <channel>name-of-your-channel</channel>
+    <passphrase>equal-to-the-server-passphrase</passphrase>
+    <hostname>localhost</hostname>
+    <port>8100</port>
+</discord>

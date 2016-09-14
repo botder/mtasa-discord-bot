@@ -1,0 +1,10 @@
+<meta>
+    <info name="Discord" author="Necktrox" version="1.0.0" type="script" description="Connects MTA:SA servers and Discord channels by sending messages/commands back and forth"/>
+    <include resource="discord-events"/>
+    <config type="server" src="config.xml"/>
+    <script type="server" src="socket.lua"/>
+    <script type="server" src="module.lua"/>
+    <script type="server" src="util.lua"/>
+    <script type="server" src="discord.lua"/>
+    <export type="server" function="send"/>
+</meta>
