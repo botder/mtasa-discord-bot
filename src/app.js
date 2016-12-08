@@ -90,7 +90,7 @@ for (let botconfig of config.bots) {
     let token = botconfig.token;
 
     if (!token.startsWith("Bot "))
-        token = `Bot {token}`;
+        token = `Bot ${token}`;
 
     bot.loginWithToken(token);
 }
