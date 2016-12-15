@@ -4,11 +4,11 @@
     "discord-token": "bot.token",
     "discord-guilds": [
         {
-            "server-id": "server.id",
+            "guild-id": "guild.id",
             "channels": [ "race", "dd", "dm" ]
         },
         {
-            "server-id": "server.id",
+            "guild-id": "guild.id",
             "channels": [ "freeroam", "race", "deathmatch" ]
         }
     ]
