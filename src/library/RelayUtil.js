@@ -1,7 +1,7 @@
 
 const crypto = require("crypto");
 
-class ServerUtil
+class RelayUtil
 {
     static encryptPassword(plainPassword)
     {
@@ -21,4 +21,4 @@ class ServerUtil
     }
 }
 
-module.exports = ServerUtil;
+module.exports = RelayUtil;
