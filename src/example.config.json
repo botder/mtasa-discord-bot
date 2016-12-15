@@ -1,5 +1,5 @@
 {
-    "relay-http-port": 8100,
+    "relay-port": 8100,
     "relay-password": "key",
     "discord-token": "bot.token",
     "discord-guilds": [
