@@ -1,9 +1,15 @@
 {
-    "port": 8100,
-    "passphrase": "key",
-    "server": "server.id",
-    "bots": [{
-        "channel": "channel.name",
-        "token": "bot.token"
-    }]
+    "relay-http-port": 8100,
+    "relay-password": "key",
+    "discord-token": "bot.token",
+    "discord-guilds": [
+        {
+            "server-id": "server.id",
+            "channels": [ "race", "dd", "dm" ]
+        },
+        {
+            "server-id": "server.id",
+            "channels": [ "freeroam", "race", "deathmatch" ]
+        }
+    ]
 }
