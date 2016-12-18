@@ -1,15 +1,20 @@
 {
-    "relay-port": 8100,
-    "relay-password": "key",
-    "discord-token": "bot.token",
-    "discord-guilds": [
-        {
-            "guild-id": "guild.id",
-            "channels": [ "race", "dd", "dm" ]
-        },
-        {
-            "guild-id": "guild.id",
-            "channels": [ "freeroam", "race", "deathmatch" ]
-        }
-    ]
+    "relay": {
+        "port": 8100,
+        "hostname": "0.0.0.0",
+        "password": "key"
+    },
+    "discord": {
+        "bot_token": "bot.token",
+        "guilds": [
+            {
+                "guild_id": "guild.id",
+                "channels": [ "race", "dd", "dm" ]
+            },
+            {
+                "guild_id": "guild.id",
+                "channels": [ "freeroam", "race", "deathmatch" ]
+            }
+        ]
+    }
 }

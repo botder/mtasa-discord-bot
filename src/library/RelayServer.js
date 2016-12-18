@@ -1,4 +1,5 @@
 
+const assert                = require("assert");
 const EventEmitter          = require("events").EventEmitter;
 const Server                = require(__dirname + "/Server");
 const RelayUtil             = require(__dirname + "/RelayUtil");
@@ -8,22 +9,30 @@ const MalformedJSONPacket   = require(__dirname + "/packets/MalformedJSONPacket"
 
 class RelayServer extends EventEmitter
 {
-    constructor(port, plainPassword)
+    constructor(config)
     {
         super();
 
-        this.password = RelayUtil.encryptPassword(plainPassword);
-        this.internal = new Server(port);
+        if (typeof(config) !== "object" || config === null) {
+            throw new TypeError("argument 'config' is not an object or null");
+        }
 
-        this.internal.on("ready", () => {
-            console.log(`Server listening on ${this.internal.port}`);
+        assert.equal(typeof(config.port), "number");
+        assert.equal(typeof(config.hostname), "string");
+        assert.equal(typeof(config.password), "string");
+
+        this.password   = RelayUtil.encryptPassword(config.password);
+        this.server     = new Server(config.hostname, config.port);
+
+        this.server.on("ready", () => {
+            console.log(`Server listening on ${this.server.port}`);
         });
 
-        this.internal.on("close", () => {
-            console.log(`Server on port ${this.internal.port} has been closed`);
+        this.server.on("close", () => {
+            console.log(`Server on port ${this.server.port} has been closed`);
         });
 
-        this.internal.on("session.data", (session, data) => {
+        this.server.on("session.data", (session, data) => {
             if (session.get("authenticated")) {
                 if (typeof(data.type) !== "string") {
                     return session.send(new MalformedJSONPacket());
@@ -57,7 +66,6 @@ class RelayServer extends EventEmitter
             }
 
             session.set("authenticated", true);
-            console.log("Session has been authenticated");
 
             return session.send(new GrantAuthPacket());
         });
@@ -65,12 +73,12 @@ class RelayServer extends EventEmitter
 
     listen()
     {
-        this.internal.listen();
+        this.server.listen();
     }
 
-    close(callback = () => {})
+    close()
     {
-        this.internal.close(callback);
+        return this.server.close();
     }
 }
 
