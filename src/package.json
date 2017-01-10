@@ -9,7 +9,7 @@
     "bot"
   ],
   "author": "Marek Kulik <marek.kulik@hotmail.com>",
-  "license": "MIT",
+  "license": "ISC",
   "dependencies": {
     "discord.js": "^11.0.0",
     "semver": "^5.3.0",
