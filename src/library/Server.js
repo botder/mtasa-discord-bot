@@ -2,79 +2,86 @@
 const net           = require("net");
 const assert        = require("assert");
 const EventEmitter  = require("events").EventEmitter;
-const Session       = require(__dirname + "/Session");
+const Session       = require(`${libdir}/Session`);
 
 class Server extends EventEmitter
 {
-    constructor(hostname, port)
-    {
-        super();
+  constructor(hostname, port)
+  {
+    super();
 
-        assert.equal(typeof(port), "number");
-        assert.equal(typeof(hostname), "string");
+    assert.ok(typeof(port) == "number" && port > 0);
+    assert.ok(hostname && typeof(hostname) == "string");
 
-        this.hostname   = hostname;
-        this.port       = port;
-        this.sessions   = new Set();
-        this.internal   = net.createServer();
-        
-        this.internal.on("connection", (socket) => {
-            let session = new Session(socket);
-            this.sessions.add(session);
-            this.emit("session.ready", session);
+    this.hostname   = hostname;
+    this.port       = port;
+    this.sessions   = new Set();
+    this.internal   = net.createServer();
+    
+    this.internal.on("connection", (socket) => {
+      let session = new Session(socket);
+      this.sessions.add(session);
+      logger.debug(`Server: Session ${session.id}: Connected`);
+      this.emit("session.ready", session);
 
-            session.on("close", () => {
-                this.sessions.delete(session);
-                this.emit("session.close", session);
-            });
+      session.on("close", () => {
+        logger.debug(`Server: Session ${session.id}: Disconnected`);
+        this.sessions.delete(session);
+        this.emit("session.close", session);
+      });
 
-            session.on("data", (json) => {
-                this.emit("session.data", session, json);
-            });
-        });
+      session.on("data", (json) => {
+        this.emit("session.data", session, json);
+      });
+    });
 
-        this.internal.on("listening", () => {
-            this.emit("ready");
-        });
+    this.internal.on("listening", () => {
+      logger.verbose("Server is listening");
+      this.emit("ready");
+    });
 
-        this.internal.on("close", () => {
-            this.emit("close");
-        });
+    this.internal.on("close", () => {
+      logger.verbose("Server has been closed");
+      this.emit("close");
+    });
 
-        this.internal.on("error", (error) => {
-            console.log(`Server error: ${error.toString()}\n${error.stack}`);
-        });
-    }
+    this.internal.on("error", (error) => {
+      logger.error(`Server: ${error.message}\n${error.stack}`);
+    });
+  }
 
-    listen()
-    {
-        if (!this.internal.listening) {
-            this.internal.listen(this.port, this.hostname);
+  listen()
+  {
+    return new Promise((resolve) => {
+      if (this.internal.listening) {
+        return resolve();
+      }
+      
+      this.internal.listen(this.port, this.hostname, undefined, resolve);
+    });
+  }
+
+  close()
+  {
+    return new Promise((resolve, reject) => {
+      if (!this.internal.listening) {
+        return resolve();
+      }
+
+      for (let session of this.sessions) {
+        session.close();
+      }
+
+      this.internal.close((error) => {
+        if (error) {
+          reject(error);
         }
-    }
-
-    close()
-    {
-        return new Promise((resolve, reject) => {
-            if (this.internal.listening) {
-                for (let session of this.sessions) {
-                    session.close();
-                }
-                
-                this.internal.close((error) => {
-                    if (error) {
-                        reject(error);
-                    }
-                    else {
-                        resolve();
-                    }
-                });
-            }
-            else {
-                resolve();
-            }
-        });
-    }
+        else {
+          resolve();
+        }
+      });
+    });
+  }
 }
 
 module.exports = Server;

@@ -1,8 +1,8 @@
 {
   "name": "mta-discord-bot",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Connects MTA:SA servers and Discord channels by sending messages/commands back and forth",
-  "main": "bootstrap.js",
+  "main": "app.js",
   "keywords": [
     "discord",
     "mta",
@@ -11,12 +11,15 @@
   "author": "Marek Kulik <marek.kulik@hotmail.com>",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^10.0.1",
-    "emojione": "^2.2.7",
-    "semver": "^5.3.0"
+    "discord.js": "^11.0.0",
+    "semver": "^5.3.0",
+    "winston": "^2.3.0"
   },
   "repository": {
     "type": "git",
     "url": "Necktrox/mta-discord-bot"
+  },
+  "scripts": {
+    "start": "node app.js"
   }
 }

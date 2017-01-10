@@ -1,17 +1,25 @@
 
-const assert        = require("assert");
-const Discord       = require("discord.js");
+const discordjs     = require("discord.js");
 const EventEmitter  = require("events").EventEmitter;
 
 class Bot extends EventEmitter
 {
-    constructor(token) {
-        super();
+  constructor(token)
+  {
+    super();
+    this.token  = token;
+    this.client = new discordjs.Client();
+  }
 
-        assert.equal(typeof(token), "string");
+  login()
+  {
+    return this.client.login(this.token);
+  }
 
-        this.client = new Discord.Client();
-    }
+  logout()
+  {
+    return this.client.destroy();
+  }
 }
 
 module.exports = Bot;
