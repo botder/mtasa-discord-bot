@@ -6,6 +6,11 @@ process.on("uncaughtException", (error) => {
   process.exit(1);
 });
 
+process.on("unhandledRejection", (error) => {
+  logger.error(`[${new Date().toUTCString()}] Uncaught rejection: ${error.message}`);
+  logger.debug(error.stack);
+});
+
 // Enhance shutdown on Windows
 if (process.platform === "win32") {
   require("readline")

@@ -1,12 +1,12 @@
 
 const Base = require(`${libdir}/packets/BasePacket`);
 
-class AuthPacket extends Base
+class BindPacket extends Base
 {
   constructor(success, error)
   {
-    super("relay.auth");
-    this.set("authenticated", !!success)
+    super("channel.bind");
+    this.set("bound", !!success)
 
     if (error != undefined) {
       this.set("error", error);
@@ -14,4 +14,4 @@ class AuthPacket extends Base
   }
 }
 
-module.exports = AuthPacket;
+module.exports = BindPacket;

@@ -53,12 +53,17 @@ if (!util.isObject(config.discord) || config.discord == null) {
 let discord = config.discord;
 let discordError = false;
 
+if (!util.isString(discord.playing) || !discord.playing) {
+  logger.error("Config: Discord: field 'playing' is not a string or empty");
+  discordError = true;
+}
+
 if (!util.isString(discord.bot_token) || !discord.bot_token) {
   logger.error("Config: Discord: field 'bot_token' is not a string or empty");
   discordError = true;
 }
 
-if (!util.isArray(discord.guilds) || util.isNullOrUndefined(discord.guilds[0])) {
+/*if (!util.isArray(discord.guilds) || util.isNullOrUndefined(discord.guilds[0])) {
   logger.error("Config: Discord: 'guilds' is not an array or empty");
   discordError = true;
 }
@@ -85,7 +90,7 @@ for (let gindex of discord.guilds.keys()) {
       discordError = true;
     }
   }
-}
+}*/
 
 if (discordError) {
   logger.error("Config: Discord configuration has errors");

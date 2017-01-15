@@ -1,12 +1,12 @@
-"use strict";
 
-const Packet = require("./Packet");
+const Base = require(`${libdir}/packets/BasePacket`);
 
-class PingPacket extends Packet {
-    constructor() {
-        super();
-        this.type = "ping";
-    }
+class PingPacket extends Base
+{
+  constructor()
+  {
+    super("ping");
+  }
 }
 
 module.exports = PingPacket;

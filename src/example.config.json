@@ -5,16 +5,7 @@
     "password": "key"
   },
   "discord": {
-    "bot_token": "bot.token",
-    "guilds": [
-      {
-        "id": "guild.id",
-        "channels": [ "race", "dd", "dm" ]
-      },
-      {
-        "id": "guild.id",
-        "channels": [ "freeroam", "race", "deathmatch" ]
-      }
-    ]
+    "playing": "Multi Theft Auto",
+    "bot_token": "bot.token"
   }
 }

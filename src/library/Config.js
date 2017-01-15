@@ -17,10 +17,10 @@ class Config
 
       json = JSON.parse(content);
 
-      logger.verbose(`Config: Successfully loaded file '${path.basename(filepath)}'`)
+      logger.verbose(`[Config] Successfully loaded file '${path.basename(filepath)}'`)
     }
     catch (error) {
-      logger.error(`Config: Failed to load from file '${path.basename(filepath)}': ${error.message}`);
+      logger.error(`[Config] Failed to load from file '${path.basename(filepath)}': ${error.message}`);
     }
 
     return json;

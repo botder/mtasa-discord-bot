@@ -1,19 +1,34 @@
 
-const Discord       = require(__dirname + "/Discord");
-const RelayServer   = require(__dirname + "/RelayServer");
+const util          = require("util");
+const Bot           = require(`${libdir}/Bot`);
+const RelayServer   = require(`${libdir}/RelayServer`);
+const Packets       = require(`${libdir}/Packets`);
 
 class App
 {
   constructor(config)
   {
-    // Create discord interface
-    this.discord = new Discord(config.discord);
+    // Create Discord interface
+    this.bot = new Bot(config.discord);
+
+    this.bot.on("message", (message) => {
+      logger.debug(`[App] #${message.channel.name} ${message.member.displayName}: ${message.cleanContent}`);
+    });
 
     // Create relay server
     this.relay = new RelayServer(config.relay);
 
     this.relay.on("session.packet", (session, type, payload) => {
-      logger.debug(`[${type}] >> ${JSON.stringify(payload)}`);
+      logger.debug(`<< ${type} >>`, payload);
+
+      if (type == "channel.bind") {
+        if (!util.isString(payload.channel) || !payload.channel) {
+          logger.debug(`[App] Session ${session.id}: Malformed channel bind packet`);
+          return session.send(new Packets.Bind(false, "invalid payload")).close();
+        }
+
+        // return this.discord.bindChannel(session, payload.channel);
+      }
     });
   }
 
@@ -21,7 +36,7 @@ class App
   {
     return Promise.all([
       this.relay.start(),
-      this.discord.start()
+      this.bot.login()
     ]);
   }
 
@@ -29,7 +44,7 @@ class App
   {
     return Promise.all([
       this.relay.stop(),
-      this.discord.stop()
+      this.bot.logout()
     ]);
   }
 }

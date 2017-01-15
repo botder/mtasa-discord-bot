@@ -3,9 +3,7 @@ const util                  = require("util");
 const EventEmitter          = require("events").EventEmitter;
 const Server                = require(`${libdir}/Server`);
 const RelayUtil             = require(`${libdir}/RelayUtil`);
-const DenyAuthPacket        = require(`${libdir}/packets/DenyAuthPacket`);
-const GrantAuthPacket       = require(`${libdir}/packets/GrantAuthPacket`);
-const MalformedJSONPacket   = require(`${libdir}/packets/MalformedJSONPacket`);
+const Packets               = require(`${libdir}/Packets`);
 
 class RelayServer extends EventEmitter
 {
@@ -27,8 +25,8 @@ class RelayServer extends EventEmitter
     this.server.on("session.data", (session, data) => {
       if (session.get("authenticated")) {
         if (!util.isString(data.type) || !data.type) {
-          logger.debug(`RelayServer: Session ${session.id}: Malformed packet:`, data);
-          return session.send(new MalformedJSONPacket());
+          logger.debug(`[RelayServer] Session ${session.id}: Malformed packet:`, data);
+          return session.send(new Packets.Malformed());
         }
 
         let payload = (typeof(data.payload) == "object" && data.payload != null) ? data.payload : {};
@@ -36,32 +34,32 @@ class RelayServer extends EventEmitter
         return this.emit("session.packet", session, data.type, payload);
       }
 
-      if (typeof(data.type) != "string" || !data.type || typeof(data.payload) != "object" || data.payload == null) {
-        logger.debug(`RelayServer: Session ${session.id}: Malformed packet:`, data);
-        return session.send(new MalformedJSONPacket()).close();
+      if (!util.isString(data.type) || !data.type || !util.isObject(data.payload) || data.payload == null) {
+        logger.debug(`[RelayServer] Session ${session.id}: Malformed packet:`, data);
+        return session.send(new Packets.Malformed()).close();
       }
 
-      if (typeof(data.payload.salt) != "string" || typeof(data.payload.password) != "string") {
-        logger.debug(`RelayServer: Session ${session.id}: Malformed authentication packet:`, data);
-        return session.send(new DenyAuthPacket("invalid payload")).close();
+      if (!util.isString(data.payload.salt) || !util.isString(data.payload.password)) {
+        logger.debug(`[RelayServer] Session ${session.id}: Malformed authentication packet:`, data);
+        return session.send(new Packets.Auth(false, "invalid payload")).close();
       }
 
-      if (data.type != "auth" || data.payload.salt.length != 32 || data.payload.password.length != 64) {
-        logger.debug(`RelayServer: Session ${session.id}: Malformed authentication packet:`, data);
-        return session.send(new DenyAuthPacket("invalid payload")).close();
+      if (data.type != "relay.auth" || data.payload.salt.length != 32 || data.payload.password.length != 64) {
+        logger.debug(`[RelayServer] Session ${session.id}: Malformed authentication packet:`, data);
+        return session.send(new Packets.Auth(false, "invalid payload")).close();
       }
 
       let hash = RelayUtil.encryptWithSalt(this.password, data.payload.salt);
 
       if (hash !== data.payload.password) {
-        logger.debug(`RelayServer: Session ${session.id}: Invalid password sent`);
-        return session.send(new DenyAuthPacket("invalid authentication payload")).close();
+        logger.debug(`[RelayServer] Session ${session.id}: Invalid password sent`);
+        return session.send(new Packets.Auth(false, "invalid authentication payload")).close();
       }
 
       session.set("authenticated", true);
-      logger.debug(`RelayServer: Session ${session.id}: Authenticated`);
+      logger.debug(`[RelayServer] Session ${session.id}: Authenticated`);
 
-      return session.send(new GrantAuthPacket());
+      return session.send(new Packets.Auth(true));
     });
   }
 
@@ -73,6 +71,11 @@ class RelayServer extends EventEmitter
   stop()
   {
     return this.server.close();
+  }
+
+  getSessions()
+  {
+    return this.server.sessions;
   }
 }
 

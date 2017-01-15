@@ -4,14 +4,14 @@ addEvent("onDiscordPacket")
 local socket = false
 
 function createSocketFromConfig()
-     local config = xmlLoadFile("config.xml")
-     local channel = xmlNodeGetValue(xmlFindChild(config, "channel", 0))
-     local passphrase = xmlNodeGetValue(xmlFindChild(config, "passphrase", 0))
-     local hostname = xmlNodeGetValue(xmlFindChild(config, "hostname", 0))
-     local port = tonumber(xmlNodeGetValue(xmlFindChild(config, "port", 0)))
-     xmlUnloadFile(config)
+    local config = xmlLoadFile("config.xml")
+    local channel = xmlNodeGetValue(xmlFindChild(config, "channel", 0))
+    local password = xmlNodeGetValue(xmlFindChild(config, "password", 0))
+    local hostname = xmlNodeGetValue(xmlFindChild(config, "hostname", 0))
+    local port = tonumber(xmlNodeGetValue(xmlFindChild(config, "port", 0)))
+    xmlUnloadFile(config)
 
-     createDiscordPipe(hostname, port, passphrase, channel)
+    createDiscordPipe(hostname, port, password, channel)
 end
 
 function send(packet, payload)
@@ -24,16 +24,16 @@ function send(packet, payload)
     })
 end
 
-function createDiscordPipe(hostname, port, passphrase, channel)
+function createDiscordPipe(hostname, port, password, channel)
     socket = Socket:create(hostname, port, { autoReconnect = true })
     socket.channel = channel
-    socket.passphrase = passphrase
+    socket.password = password
     socket.ready = false
 
     socket:on("ready", 
         function (socket)
             outputDebugString("[Discord] Connected to ".. hostname .." on port ".. port)
-            sendAuthPacket(socket)
+            sendRelayAuthPacket(socket)
         end
     )
 
@@ -48,19 +48,28 @@ function createDiscordPipe(hostname, port, passphrase, channel)
                     outputDebugString("[Discord] Reconnecting now..")
                     socket:connect()
                 end,
-            15000, 1)
+            5000, 1)
         end
     )
 end
 
-function sendAuthPacket(socket)
+function sendRelayAuthPacket(socket)
     local salt = md5(getTickCount() + getRealTime().timestamp)
 
     socket:write(table.json { 
-        type = "auth",
+        type = "relay.auth",
         payload = {
             salt = salt,
-            passphrase = hash("sha256", salt .. hash("sha512", socket.passphrase))
+            password = hash("sha256", salt .. hash("sha512", socket.password))
+        }
+    })
+end
+
+function sendRelayBindPacket(socket)
+    socket:write(table.json {
+        type = "channel.bind",
+        payload = {
+            channel = socket.channel
         }
     })
 end
@@ -69,16 +78,10 @@ function handlePingPacket(socket)
     return socket:write(table.json { type = "pong" })
 end
 
-function handleAuthPacket(socket, payload)
+function handleRelayAuthPacket(socket, payload)
     if payload.authenticated then
         outputDebugString("[Discord] Authentication successful")
-
-        socket:write(table.json {
-            type = "select-channel",
-            payload = {
-                channel = socket.channel
-            }
-        })
+        sendRelayBindPacket(socket)
     else
         local error = tostring(payload.error) or "unknown error" 
         outputDebugString("[Discord] Failed to authenticate: ".. error)
@@ -109,13 +112,23 @@ function handleSelectChannelPacket(socket, payload)
     end
 end
 
-function handleDisconnectPacket(socket)
+function handleRelayClosePacket(socket)
     outputDebugString("[Discord] Server has closed the connection")
     socket:disconnect()
 end
 
 function handleDiscordPacket(socket, packet, payload)
-    if packet == "ping" then
+    outputDebugString(("<< %s >> %s"):format(packet, toJSON(payload, true)))
+
+    if packet == "relay.auth" then
+        return handleRelayAuthPacket(socket, payload)
+    end
+
+    if packet == "relay.close" then
+        return handleRelayClosePacket(socket)
+    end
+
+    --[[if packet == "ping" then
         return handlePingPacket(socket)
     elseif packet == "auth" then
         return handleAuthPacket(socket, payload)
@@ -125,5 +138,5 @@ function handleDiscordPacket(socket, packet, payload)
         return handleDisconnectPacket(socket)
     else
         triggerEvent("onDiscordPacket", resourceRoot, packet, payload)
-    end
+    end]]
 end

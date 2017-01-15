@@ -4,8 +4,8 @@ const util          = require("util");
 const crypto        = require("crypto");
 const assert        = require("assert");
 const EventEmitter  = require("events").EventEmitter;
-const Packet        = require(`${libdir}/packets/Packet`);
-const ClosePacket   = require(`${libdir}/packets/ClosePacket`);
+const Packets       = require(`${libdir}/Packets`);
+const BasePacket    = require(`${libdir}/packets/BasePacket`);
 
 class Session extends EventEmitter
 {
@@ -24,11 +24,12 @@ class Session extends EventEmitter
 
     this.socket.on("timeout", () => {
       this.timeouts += 1;
-      logger.verbose(`Session ${this.id}: Timeout ${this.timeouts} hit`)
+      // logger.verbose(`[Session ${this.id}] Timeout ${this.timeouts} hit`)
 
       if (this.timeouts == this.maxTimeouts) {
-        logger.debug(`Session ${this.id}: Timeout`);
-        this.close();
+        // TODO: uncomment in production
+        /*logger.debug(`[Session ${this.id}] Timeout`);
+        this.close();*/
       }
       else {
         this.socket.setTimeout(1000);
@@ -36,7 +37,7 @@ class Session extends EventEmitter
     });
 
     this.socket.on("error", (error) => {
-      logger.error(`Session ${this.id}: ${error.message}\n${error.stack}`);
+      logger.error(`[Session ${this.id}] ${error.message}\n${error.stack}`);
       this.close();
     });
 
@@ -78,7 +79,8 @@ class Session extends EventEmitter
         }
         catch (error) {
           // Line is invalid JSON
-          logger.debug(`Session ${this.id}: Error in JSON: ${error.message}`);
+          logger.debug(`[Session ${this.id}] Error in JSON: ${error.message}`);
+          continue;
         }
 
         if (util.isObject(json) && json != null && util.isString(json.type)) {
@@ -86,7 +88,7 @@ class Session extends EventEmitter
             continue;
           }
 
-          logger.verbose(`Session ${this.id} ->`, json);
+          logger.verbose(`[Session ${this.id}] ->`, json);
           this.emit("data", json);
         }
       }
@@ -103,7 +105,7 @@ class Session extends EventEmitter
   close()
   {
     if (!this.closed) {
-      this.send(new ClosePacket());
+      this.send(new Packets.Shutdown());
       this.socket.destroy();
     }
   }
@@ -118,6 +120,11 @@ class Session extends EventEmitter
     this.data.set(key, value);
   }
 
+  delete(key)
+  {
+    this.data.delete(key);
+  }
+
   send(object)
   {
     if (this.closed) {
@@ -130,7 +137,7 @@ class Session extends EventEmitter
 
     let json = false;
 
-    if (object instanceof Packet) {
+    if (object instanceof BasePacket) {
       json = object.toString();
     }
     else {

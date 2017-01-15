@@ -4,7 +4,21 @@
  * This application requires 6.9.2 LTS (or newer) release of NodeJS.
  * It has been not designed to work with older releases
  */
-const semver = require("semver");
+var semver = null;
+
+try {
+  semver = require("semver");
+}
+catch (error) {
+  if (error.code == "MODULE_NOT_FOUND") {
+    console.error("Please install the dependencies of the package (npm install)");
+  }
+  else {
+    console.error("Error:", error.message);
+  }
+  
+  process.exit();
+}
 
 if (semver.lt(process.versions.node, "6.9.2")) {
   console.error("Your environment doesn't fulfill the neccessary requirements to be");

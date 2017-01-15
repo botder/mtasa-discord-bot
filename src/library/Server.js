@@ -21,11 +21,11 @@ class Server extends EventEmitter
     this.internal.on("connection", (socket) => {
       let session = new Session(socket);
       this.sessions.add(session);
-      logger.debug(`Server: Session ${session.id}: Connected`);
+      logger.debug(`[Server] Session ${session.id}: Connected`);
       this.emit("session.ready", session);
 
       session.on("close", () => {
-        logger.debug(`Server: Session ${session.id}: Disconnected`);
+        logger.debug(`[Server] Session ${session.id}: Disconnected`);
         this.sessions.delete(session);
         this.emit("session.close", session);
       });
@@ -36,17 +36,17 @@ class Server extends EventEmitter
     });
 
     this.internal.on("listening", () => {
-      logger.verbose("Server is listening");
+      logger.verbose("[Server] Listening");
       this.emit("ready");
     });
 
     this.internal.on("close", () => {
-      logger.verbose("Server has been closed");
+      logger.verbose("[Server] Closed");
       this.emit("close");
     });
 
     this.internal.on("error", (error) => {
-      logger.error(`Server: ${error.message}\n${error.stack}`);
+      logger.error(`[Server] ${error.message}\n${error.stack}`);
     });
   }
 
