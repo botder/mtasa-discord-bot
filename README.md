@@ -1,5 +1,5 @@
 # mta-discord-bot
-Connects MTA:SA servers and Discord channels by sending messages/commands back and forth.
+Connects MTA:SA servers and Discord channels by sending messages/commands back and forth.  
 **Note:** The recent code update has breaking changes to your `config.json`, please replace _server_ with _guild_, thanks.
 
 ## Installation
@@ -8,9 +8,9 @@ Connects MTA:SA servers and Discord channels by sending messages/commands back a
 The discord resource requires the socket module on your MTA:SA server. You can find the installation guide
 and the binaries on the [MTA wiki](https://wiki.multitheftauto.com/wiki/Modules/Sockets).
 
-The resources themselves require no special setup, you only have to edit the config.xml to fit your setup.
-The resource **discord** is responsible for message transfer between your MTA server and the Discord relay.
-On the other hand, **discord-events** is listening for events on the MTA server to send these to the relay
+The resources themselves require no special setup, you only have to edit the `discord/config.xml` to fit your setup.
+The resource **discord** is responsible for message transfer between your MTA:SA server and the Discord relay.
+On the other hand, **discord-events** is listening for events on the MTA:SA server to send these to the relay
 through the **discord** resource.
 
 > mta/discord/config.xml
