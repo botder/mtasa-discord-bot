@@ -9,12 +9,12 @@ class TextMessagePacket extends Packet {
         this.payload = {
             author: {
                 id: msg.author.id,
-                name: msg.server.detailsOf(msg.author).nick || msg.author.name,
-                roles: msg.server.rolesOf(msg.author).map(r => r.name),
+                name: msg.member.displayName,
+                roles: msg.member.roles.map(r => r.name),
             },
             message: {
                 id: msg.id,
-                text: msg.cleanContent,
+                text: msg.cleanMessage,
             }
         };
     }

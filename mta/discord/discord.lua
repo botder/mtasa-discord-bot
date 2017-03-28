@@ -28,9 +28,9 @@ function createDiscordPipe(hostname, port, passphrase, channel)
     socket = Socket:create(hostname, port, { autoReconnect = true })
     socket.channel = channel
     socket.passphrase = passphrase
-    socket.ready = false
+    socket.bindmessage = false
 
-    socket:on("ready", 
+    socket:on("ready",
         function (socket)
             outputDebugString("[Discord] Connected to ".. hostname .." on port ".. port)
             sendAuthPacket(socket)
@@ -39,10 +39,10 @@ function createDiscordPipe(hostname, port, passphrase, channel)
 
     socket:on("data", handleDiscordPacket)
 
-    socket:on("close", 
+    socket:on("close",
         function (socket)
             outputDebugString("[Discord] Disconnected from ".. hostname)
-            
+
             setTimer(
                 function ()
                     outputDebugString("[Discord] Reconnecting now..")
@@ -56,7 +56,7 @@ end
 function sendAuthPacket(socket)
     local salt = md5(getTickCount() + getRealTime().timestamp)
 
-    socket:write(table.json { 
+    socket:write(table.json {
         type = "auth",
         payload = {
             salt = salt,
@@ -80,7 +80,7 @@ function handleAuthPacket(socket, payload)
             }
         })
     else
-        local error = tostring(payload.error) or "unknown error" 
+        local error = tostring(payload.error) or "unknown error"
         outputDebugString("[Discord] Failed to authenticate: ".. error)
         socket:disconnect()
     end
@@ -92,15 +92,18 @@ function handleSelectChannelPacket(socket, payload)
             outputDebugString("[Discord] Bot isn't ready")
         else
             outputDebugString("[Discord] Channel has been bound")
-            socket.ready = true
 
-            socket:write(table.json {
-                type = "chat.message.text",
-                payload = {
-                    author = "Console",
-                    text = "Hello :wave:"
-                }
-            })
+            if not socket.bindmessage then
+                socket:write(table.json {
+                    type = "chat.message.text",
+                    payload = {
+                        author = "Server",
+                        text = "Hello :wave:"
+                    }
+                })
+
+                socket.bindmessage = true
+            end
         end
     else
         local error = tostring(payload.error) or "unknown error"
@@ -112,6 +115,7 @@ end
 function handleDisconnectPacket(socket)
     outputDebugString("[Discord] Server has closed the connection")
     socket:disconnect()
+    socket.bindmessage = false
 end
 
 function handleDiscordPacket(socket, packet, payload)

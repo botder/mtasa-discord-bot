@@ -43,7 +43,7 @@ for (let botconfig of config.bots) {
     }
 
     // Create the Bot instance
-    let bot = new Bot(config.server, channel);
+    let bot = new Bot(config.guild, channel);
     channelBots.set(channel, bot);
 
     bot.on("ready", () => {
@@ -58,7 +58,7 @@ for (let botconfig of config.bots) {
         }
     });
 
-    bot.on("disconnected", () => {
+    bot.on("disconnect", () => {
         console.log(`Bot ${bot.name} disconnected`);
 
         // Remove this bot
@@ -69,7 +69,7 @@ for (let botconfig of config.bots) {
         if (!channelSessions.has(bot.channelName))
             return;
 
-        if (msg.cleanContent.length > 200)
+        if (msg.cleanMessage.length > 200)
             return;
 
         let session = channelSessions.get(bot.channelName);
@@ -84,15 +84,13 @@ for (let botconfig of config.bots) {
     });
 
     bot.on("session.bind", (session) => {
-        bot.sendMessage(`**Bot:** Hello`);
+        if (!session.get("bind-message")) {
+            bot.sendMessage(`**Bot:** Hello :sparkles:`);
+            session.set("bind-message", true)
+        }
     });
 
-    let token = botconfig.token;
-
-    if (!token.startsWith("Bot "))
-        token = `Bot ${token}`;
-
-    bot.loginWithToken(token);
+    bot.login(botconfig.token);
 }
 
 server.on("session.ready", (session) => {
@@ -105,8 +103,9 @@ server.on("session.close", (session) => {
 
     let channel = session.get("channel");
 
-    if (channelSessions.has(channel))
+    if (channelSessions.has(channel)) {
         channelSessions.delete(channel);
+    }
 });
 
 server.on("data", (session, type, payload) => {
@@ -115,7 +114,7 @@ server.on("data", (session, type, payload) => {
             // Verify payload
             if (typeof payload.channel !== "string")
                 return session.send(SelectChannelPacket.error("no channel name in payload")).close();
-            
+
             // Check if any bot manages this channel
             if (!channelBots.has(payload.channel))
                 return session.send(SelectChannelPacket.error("channel not available"));
@@ -135,7 +134,7 @@ server.on("data", (session, type, payload) => {
                 return session.send(SelectChannelPacket.wait());
             else
                 bot.emit("session.bind", session);
-            
+
             return session.send(SelectChannelPacket.success());
         }
         else

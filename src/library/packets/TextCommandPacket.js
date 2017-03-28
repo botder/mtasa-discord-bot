@@ -8,20 +8,20 @@ class TextCommandPacket extends Packet {
 
         this.type = "text.command";
 
-        let params = msg.cleanContent.split(/\s+/);
+        let params = msg.cleanMessage.split(/\s+/);
         let command = (params.splice(0, 1))[0].substr(1);
 
         this.payload = {
             author: {
                 id: msg.author.id,
-                name: msg.server.detailsOf(msg.author).nick || msg.author.name,
-                roles: msg.server.rolesOf(msg.author).map(r => r.name),
+                name: msg.member.displayName,
+                roles: msg.member.roles.map(r => r.name),
             },
             message: {
                 command,
                 params,
                 id: msg.id,
-                text: msg.cleanContent,
+                text: msg.cleanMessage,
             }
         };
     }

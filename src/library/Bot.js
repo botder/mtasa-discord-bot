@@ -5,36 +5,25 @@ const EventEmitter  = require("events").EventEmitter;
 const Emojione      = require("emojione");
 
 class Bot extends EventEmitter {
-    /**
-     * @param {string} server
-     * @param {string} channel
-     */
-    constructor(server, channel) {
+    constructor(guild, channel) {
         super();
 
         this.info = {};
-        this.serverId = server;
+        this.guildId = guild;
         this.channelName = channel;
-        this.server = null;
+        this.guild = null;
         this.channel = null;
         this.connected = false;
-
-        this.client = new Discord.Client({
-            "autoReconnect": true,
-            "guildCreateTimeout": 1000, // default: 1000
-            "largeThreshold": 250, // default: 250
-            "maxCachedMessages": 50, // default: 1000
-            "rateLimitAsError": false // default: false
-        });
+        this.client = new Discord.Client();
 
         this.client.on("ready", this._ready.bind(this));
         this.client.on("error", this._error.bind(this));
-        this.client.on("disconnected", this._disconnected.bind(this));
+        this.client.on("disconnect", this._disconnect.bind(this));
         this.client.on("message", this._message.bind(this));
-        this.client.on("serverCreated", this._serverCreated.bind(this));
-        this.client.on("serverDeleted", this._serverDeleted.bind(this));
-        this.client.on("channelCreated", this._channelCreated.bind(this));
-        this.client.on("channelDeleted", this._channelDeleted.bind(this));
+        this.client.on("guildCreate", this._guildCreate.bind(this));
+        this.client.on("guildDelete", this._guildDelete.bind(this));
+        this.client.on("channelCreate", this._channelCreate.bind(this));
+        this.client.on("channelDelete", this._channelDelete.bind(this));
     }
 
     get id() {
@@ -58,65 +47,47 @@ class Bot extends EventEmitter {
     }
 
     sendMessage(message) {
-        if (!this.connected || !this.channel)
+        if (!this.connected || !this.channel) {
             return;
+        }
 
-        this.client.sendMessage(this.channel, message).catch((error) => {
-            if (error)
-                console.log(`Bot ${this.name} error: ${error.toString()}\n${error.stack}`);
-        });
+        return this.channel.sendMessage(message);
     }
 
-    /**
-     * @param {string} token
-     * @param {function} [callback]
-     */
-    loginWithToken(token, callback = () => {}) {
-        return this.client.loginWithToken(token, callback);
-    }
-
-    /**
-     * @param {function} [callback]
-     */
-    logout(callback = () => {}) {
-        return this.client.logout(callback);
-    }
-
-    /**
-     * @param {function} [callback]
-     */
-    destroy(callback = () => {}) {
-        return this.client.destroy(callback);
+    login(token) {
+        return this.client.login(token);
     }
 
     _ready() {
         // Update internal bot user information
         this.info.id = this.client.user.id;
-        this.info.name = this.client.user.name;
+        this.info.name = this.client.user.username;
         this.info.discriminator = this.client.user.discriminator;
         this.info.createdAt = this.client.user.createdAt;
 
         // Delete private channels
-        for (let channel of this.client.privateChannels)
+        for (let channel of this.client.channels.filterArray(ch => ch.type == "dm" || ch.type == "group")) {
             channel.delete();
-
-        // Leave ignored servers
-        for (let server of this.client.servers) {
-            if (server.id !== this.serverId) {
-                console.log(`Server ${server.name} is not whitelisted for bot ${this.name}`);
-                server.leave();
-            }
         }
 
-        // Search for selected server by id
-        let server = this.client.servers.get("id", this.serverId);
+        // Leave ignored guilds
+        for (let guild of this.client.guilds.filterArray(g => g.id !== this.guildId)) {
+            console.log(`Guild ${guild.name} is not whitelisted for bot ${this.name}`);
+            guild.leave();
+        }
 
-        if (server) {
-            this.server = server;
-            let channel = server.channels.get("name", this.channelName);
+        // Search for selected guild by id
+        let guild = this.client.guilds.get(this.guildId);
 
-            if (channel)
+        if (guild) {
+            this.guild = guild;
+            let channel = guild.channels.find("name", this.channelName);
+
+            if (channel) {
                 this.channel = channel;
+            } else {
+                this.channel = null;
+            }
         }
 
         this.connected = true;
@@ -127,110 +98,76 @@ class Bot extends EventEmitter {
         console.log(`Bot ${this.name} error: ${error.toString()}\n${error.stack}`);
     }
 
-    _disconnected() {
-        if (!this.connected)
+    _disconnect() {
+        if (!this.connected) {
             return;
-        
-        this.server = null;
+        }
+
+        this.guild = null;
         this.channel = null;
         this.connected = false;
-        this.emit("disconnected");
+        this.emit("disconnect");
     }
 
     _message(msg) {
         // Ignore bot and private messages
-        if (msg.channel.isPrivate || msg.author.bot)
+        if (msg.system || !msg.member || msg.author.bot) {
             return;
+        }
 
         // Ignore messages with attachments
-        if (msg.attachments.length > 0)
+        if (msg.attachments.size > 0) {
             return;
+        }
 
-        // Ignore messages from ignored servers/channels
-        if (!msg.channel.equals(this.channel))
+        // Ignore messages from ignored guilds/channels
+        if (msg.channel !== this.channel) {
             return;
+        }
 
-        var nick = msg.server.detailsOf(msg.author).nick || msg.author.name;
-        msg.cleanContent = Emojione.toShort(Bot.decodeEmojis(Bot.decodeMessage(msg)));
+        msg.cleanMessage = Emojione.toShort(Bot.decodeEmojis(msg.cleanContent));
         this.emit("message", msg);
     }
 
-    _serverCreated(server) {
-        // Leave ignored servers
-        if (this.server || server.id !== this.serverId) {
-            console.log(`Server ${server.name} is not whitelisted for bot ${this.name}`);
-            server.leave();
-        }
-        else if (!this.server && server.id === this.serverId) {
-            this.server = server;
-            let channel = server.channels.get("name", this.channelName);
-
-            if (channel)
-                this.channel = channel;
+    _guildCreate(guild) {
+        // Leave ignored guilds
+        if (guild.id !== this.guildId) {
+            console.log(`Guild ${guild.name} is not whitelisted for bot ${this.name}`);
+            guild.leave();
+        } else {
+            this.guild = guild;
+            this.channel = guild.channels.find("name", this.channelName) || null;
         }
     }
 
-    _serverDeleted(server) {
-        // Our server has been deleted (maybe bot was kicked)
-        if (server.equals(this.server)) {
-            this.server = null;
+    _guildDelete(guild) {
+        // Our guild has been deleted (maybe bot was kicked)
+        if (guild === this.guild) {
+            this.guild = null;
             this.channel = null;
         }
     }
 
-    _channelCreated(channel) {
+    _channelCreate(channel) {
         // Delete private channels
-        if (channel.isPrivate)
+        if (channel.type != "text")
             return channel.delete();
-        
+
         // Is it our channel?
-        if (!this.channel && channel.name === this.channelName)
+        if (channel.name === this.channelName) {
             this.channel = channel;
+        }
     }
 
-    _channelDeleted(channel) {
+    _channelDelete(channel) {
         // Our channel has been deleted
-        if (channel.equals(this.channel)) {
+        if (channel === this.channel) {
             this.channel = null;
         }
     }
 
     static decodeEmojis(message) {
         return message.replace(/<(:\w+:)\d+>/g, "$1");
-    }
-
-    static decodeMessage(msg) {
-        if (msg.channel.isPrivate)
-            return msg.content;
-
-        let server = msg.server;
-
-        return msg.content.replace(/<@&(\d+)>|<@!(\d+)>|<@(\d+)>|<#(\d+)>/g, (match, RID, NID, UID, CID) => {
-            if (UID || NID) {
-                var user = server.members.get("id", UID || NID);
-                
-                if (user) {
-                    if (UID)
-                        return "@" + user.name;
-                    else if (NID)
-                        return "@" + (server.detailsOf(user).nick || user.name);
-                }
-            }
-            else if (CID) {
-                var channel = server.channels.get("id", CID);
-
-                if (channel)
-                    return "#" + channel.name;
-            }
-            else if (RID) {
-                var role = server.roles.get("id", RID);
-
-                if (role)
-                    return "@" + role.name;
-            }
-
-            return "";
-        });
     }
 }
 
