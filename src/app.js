@@ -90,7 +90,15 @@ for (let botconfig of config.bots) {
         }
     });
 
-    bot.login(botconfig.token);
+    function login() {
+        bot.login(botconfig.token)
+            .catch((error) => {
+                console.error(`Bot failed to login: ${error.message}`);
+                setTimeout(login, 5000);
+            });
+    }
+
+    login();
 }
 
 server.on("session.ready", (session) => {
@@ -148,3 +156,14 @@ server.on("data", (session, type, payload) => {
 });
 
 server.listen();
+
+process.on("unhandledRejection", (error, promise) => {
+    console.error(`Unhandled promise rejection: ${error.message}`);
+    console.error(error.stack);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error(`Uncaught exception: ${error.message}`);
+    console.error(error.stack);
+    process.exit();
+});
