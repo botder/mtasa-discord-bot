@@ -15,10 +15,10 @@ class WebradioHandler extends Handler {
         if (type == "webradio.stream") {
             if (!payload.title)
                 return;
-            
+
             let title = this.escape(payload.title);
-            
-            bot.sendMessage(`:musical_note: Playing now ♪♫ ${title} ♫♪`);
+
+            bot.sendMessage(`:musical_note: Playing now ♪♫ ${title} ♫♪`).catch(() => console.error("bot.sendMessage error @ WebradioHandler.js#21"));
         }
     }
 }

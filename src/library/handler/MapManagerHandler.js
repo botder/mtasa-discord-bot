@@ -12,9 +12,9 @@ class MapManagerHandler extends Handler {
         if (type == "mapmanager.mapstart") {
             if (!payload.name)
                 return;
-            
+
             let name = this.escape(payload.name);
-            bot.sendMessage(`:map: Map '${name}' started`);
+            bot.sendMessage(`:map: Map '${name}' started`).catch(() => console.error("bot.sendMessage error @ MapManagerHandler.js#17"));
         }
     }
 }
