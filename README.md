@@ -47,3 +47,14 @@ the relay automatically on crashes.
     }]
 }
 ```
+
+## Notes
+
+### Discord Bots
+This application doesn't magically add your bot(s) to your guild(s). You (better said: the guild owner) have to authorize every bot user. Navigate to your bot application on the following page and note the client id:
+> https://discordapp.com/developers/applications/me
+
+Then continue to replace the `client_id` field in the URL below and navigate to that page:
+> https://discordapp.com/api/oauth2/authorize?scope=bot&permissions=0&client_id=<your_client_id_here>
+
+Proceed by authorizing the bot for the guild of your choice and you're done.
