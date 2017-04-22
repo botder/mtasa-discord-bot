@@ -5,15 +5,17 @@ const EventEmitter  = require("events").EventEmitter;
 const Emojione      = require("emojione");
 
 class Bot extends EventEmitter {
-    constructor(guild, channel) {
+    constructor(guild, channel, token) {
         super();
 
         this.info = {};
         this.guildId = guild;
         this.channelName = channel;
+        this.token = token;
         this.guild = null;
         this.channel = null;
         this.connected = false;
+        this.reconnectTimer = null;
         this.client = new Discord.Client();
 
         this.client.on("ready", this._ready.bind(this));
@@ -54,11 +56,21 @@ class Bot extends EventEmitter {
         return this.channel.sendMessage(message);
     }
 
-    login(token) {
-        return this.client.login(token);
+    login() {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+
+        return this.client.login(this.token);
     }
 
     _ready() {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+        
         // Update internal bot user information
         this.info.id = this.client.user.id;
         this.info.name = this.client.user.username;
@@ -102,6 +114,17 @@ class Bot extends EventEmitter {
         if (!this.connected) {
             return;
         }
+
+        let reconnectFunc = (() => {
+            console.log(`Bot ${this.name} reached reconnect timeout. Forcing reconnect..`);
+            this.reconnectTimer = null;
+            this.login().catch((error) => {
+                console.log(`Bot ${this.name} failed to reconnect after timeout. Trying again in 5 minutes.`);
+                this.reconnectTimer = setTimeout(reconnectFunc, 5 * 60000);
+            });
+        }).bind(this);
+
+        this.reconnectTimer = setTimeout(reconnectFunc, 10000);
 
         this.guild = null;
         this.channel = null;

@@ -7,10 +7,12 @@
     "discord",
     "mta"
   ],
+  "scripts": {
+    "start": "node app.js"
+  },
   "author": "Marek Kulik <marek.kulik@hotmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bufferutil": "^3.0.0",
     "discord.js": "^11.0.0",
     "emojione": "^2.2.7"
   }

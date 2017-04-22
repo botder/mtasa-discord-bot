@@ -43,7 +43,7 @@ for (let botconfig of config.bots) {
     }
 
     // Create the Bot instance
-    let bot = new Bot(config.guild, channel);
+    let bot = new Bot(config.guild, channel, botconfig.token);
     channelBots.set(channel, bot);
 
     bot.on("ready", () => {
@@ -91,7 +91,7 @@ for (let botconfig of config.bots) {
     });
 
     function login() {
-        bot.login(botconfig.token)
+        bot.login()
             .catch((error) => {
                 console.error(`Bot failed to login: ${error.message}`);
                 setTimeout(login, 5000);
