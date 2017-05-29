@@ -53,7 +53,7 @@ class Bot extends EventEmitter {
             return Promise.reject(new Error("Bot is offline or not in your guild or didn't find the specified channel"));
         }
 
-        return this.channel.sendMessage(message);
+        return this.channel.send(message);
     }
 
     login() {
