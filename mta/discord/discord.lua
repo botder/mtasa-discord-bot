@@ -60,7 +60,7 @@ function sendAuthPacket(socket)
         type = "auth",
         payload = {
             salt = salt,
-            passphrase = hash("sha256", salt .. hash("sha512", socket.passphrase))
+            passphrase = hash("sha256", salt .. hash("sha512", socket.passphrase):lower()):lower()
         }
     })
 end
