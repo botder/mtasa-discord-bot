@@ -80,7 +80,7 @@ class Session extends EventEmitter {
         // Emit data event for each single line in the buffer
         for (let line of lines) {
             // Convert base64 line to UTF8 data
-            let data = (new Buffer(line, "base64")).toString("utf8");
+            let data = (new Buffer.from(line, "base64")).toString("utf8");
             let json = false;
 
             try {
@@ -142,7 +142,7 @@ class Session extends EventEmitter {
         else 
             json = JSON.stringify(object);
 
-        this.socket.write((new Buffer(json)).toString("base64") + "\r\n");
+        this.socket.write((new Buffer.from(json)).toString("base64") + "\r\n");
 
         // (debug) Hack
         // if (object.type !== "ping")

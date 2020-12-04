@@ -78,22 +78,22 @@ class Bot extends EventEmitter {
         this.info.createdAt = this.client.user.createdAt;
 
         // Delete private channels
-        for (let channel of this.client.channels.filterArray(ch => ch.type == "dm" || ch.type == "group")) {
+        for (let channel of this.client.channels.cache.filter(ch => ch.type == "dm" || ch.type == "group")) {
             channel.delete();
         }
 
         // Leave ignored guilds
-        for (let guild of this.client.guilds.filterArray(g => g.id !== this.guildId)) {
+        for (let guild of this.client.guilds.cache.filter(g => g.id !== this.guildId)) {
             console.log(`Guild ${guild.name} is not whitelisted for bot ${this.name}`);
             guild.leave();
         }
 
         // Search for selected guild by id
-        let guild = this.client.guilds.get(this.guildId);
+        let guild = this.client.guilds.cache.get(this.guildId);
 
         if (guild) {
             this.guild = guild;
-            let channel = guild.channels.find("name", this.channelName);
+            let channel = guild.channels.cache.find(channel => channel.name === this.channelName);
 
             if (channel) {
                 this.channel = channel;
@@ -159,7 +159,7 @@ class Bot extends EventEmitter {
             guild.leave();
         } else {
             this.guild = guild;
-            this.channel = guild.channels.find("name", this.channelName) || null;
+            this.channel = guild.channels.cache.find(channel => channel.name === this.channelName) || null;
         }
     }
 

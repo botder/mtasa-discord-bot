@@ -15,7 +15,7 @@ class TextCommandPacket extends Packet {
             author: {
                 id: msg.author.id,
                 name: msg.member.displayName,
-                roles: msg.member.roles.map(r => r.name),
+                roles: msg.member.roles.cache.map(r => r.name),
             },
             message: {
                 command,
