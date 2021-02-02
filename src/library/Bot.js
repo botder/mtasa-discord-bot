@@ -48,6 +48,14 @@ class Bot extends EventEmitter {
         return this.connected;
     }
 
+    setActivity(status) {
+        if (!this.connected || !this.channel) {
+            return Promise.reject(new Error("Bot is offline or not in your guild or didn't find the specified channel"));
+        }
+
+        return this.client.user.setActivity(status);
+    }
+
     sendMessage(message) {
         if (!this.connected || !this.channel) {
             return Promise.reject(new Error("Bot is offline or not in your guild or didn't find the specified channel"));
