@@ -8,6 +8,7 @@ const ChatConfirmHandler    = require("./handler/ChatConfirmHandler");
 const PlayerEventHandler    = require("./handler/PlayerEventHandler");
 const MapManagerHandler     = require("./handler/MapManagerHandler");
 const WebradioHandler       = require("./handler/WebradioHandler");
+const ServerStatusHandler   = require("./handler/ServerStatusHandler");
 
 class PacketManager {
     constructor() {
@@ -21,6 +22,7 @@ class PacketManager {
         this.register(new PlayerEventHandler());
         this.register(new MapManagerHandler());
         this.register(new WebradioHandler());
+        this.register(new ServerStatusHandler());
     }
 
     /**
