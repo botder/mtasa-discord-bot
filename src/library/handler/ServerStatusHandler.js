@@ -27,7 +27,7 @@ class ServerStatusHandler extends Handler {
 			mix = payload;
 		}
 
-		bot.setActivity(`Race: ${race.player_count}/${mix.max_players} | Mix: ${mix.player_count}/${mix.max_players}`);
+		bot.setActivity(`Race: ${race.player_count}/${race.max_players} | Mix: ${mix.player_count}/${mix.max_players}`);
 	}
 }
 
