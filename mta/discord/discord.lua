@@ -4,14 +4,14 @@ addEvent("onDiscordPacket")
 local socket = false
 
 function createSocketFromConfig()
-     local config = xmlLoadFile("config.xml")
-     local channel = xmlNodeGetValue(xmlFindChild(config, "channel", 0))
-     local passphrase = xmlNodeGetValue(xmlFindChild(config, "passphrase", 0))
-     local hostname = xmlNodeGetValue(xmlFindChild(config, "hostname", 0))
-     local port = tonumber(xmlNodeGetValue(xmlFindChild(config, "port", 0)))
-     xmlUnloadFile(config)
+    local config = xmlLoadFile("config.xml")
+    local channel = xmlNodeGetValue(xmlFindChild(config, "channel", 0))
+    local passphrase = xmlNodeGetValue(xmlFindChild(config, "passphrase", 0))
+    local hostname = xmlNodeGetValue(xmlFindChild(config, "hostname", 0))
+    local port = tonumber(xmlNodeGetValue(xmlFindChild(config, "port", 0)))
+    xmlUnloadFile(config)
 
-     createDiscordPipe(hostname, port, passphrase, channel)
+    createDiscordPipe(hostname, port, passphrase, channel)
 end
 
 function send(packet, payload)
@@ -25,7 +25,7 @@ function send(packet, payload)
 end
 
 function createDiscordPipe(hostname, port, passphrase, channel)
-    socket = Socket:create(hostname, port, { autoReconnect = true })
+    socket = Socket:create(hostname, port, { autoReconnect = true, connectOnCreate = false })
     socket.channel = channel
     socket.passphrase = passphrase
     socket.bindmessage = false
@@ -51,6 +51,14 @@ function createDiscordPipe(hostname, port, passphrase, channel)
             15000, 1)
         end
     )
+
+    socket:on("error",
+        function (socket)
+            outputDebugString("[Discord] Failed to connect to ".. hostname .." on port ".. port, 4, 255, 100, 100)
+        end
+    )
+
+    socket:connect()
 end
 
 function sendAuthPacket(socket)
