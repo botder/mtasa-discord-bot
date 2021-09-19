@@ -58,6 +58,8 @@ function Socket:connect()
     if self.handle then
         instances[self.handle] = self
         self.timeout = setTimer(Socket.timeout, self.options.connectTimeoutMS, 1, self.handle)
+    else
+        self:emit("error")
     end
 end
 
@@ -122,6 +124,12 @@ addEventHandler("onSockClosed", root,
         if instance then
             instance.handle = false
             instances[socket] = nil
+
+            if instance.timeout and isTimer(instance.timeout) then
+                killTimer(instance.timeout)
+                instance:emit("error")
+                return
+            end
 
             if instance.connected then
                 instance.connected = false
