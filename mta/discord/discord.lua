@@ -29,9 +29,17 @@ function createDiscordPipe(hostname, port, passphrase, channel)
     socket.channel = channel
     socket.passphrase = passphrase
     socket.bindmessage = false
+    socket.timeouts = 0
 
     socket:on("ready",
         function (socket)
+            socket.timeouts = 0
+            
+            if socket.options.previousReconnectRetryMS ~= nil then
+                socket.options.reconnectRetryMS = socket.options.previousReconnectRetryMS
+                socket.options.previousReconnectRetryMS = nil
+            end
+
             outputDebugString("[Discord] Connected to ".. hostname .." on port ".. port)
             sendAuthPacket(socket)
         end
@@ -54,7 +62,19 @@ function createDiscordPipe(hostname, port, passphrase, channel)
 
     socket:on("error",
         function (socket)
-            outputDebugString("[Discord] Failed to connect to ".. hostname .." on port ".. port, 4, 255, 100, 100)
+            outputDebugString("[Discord] Configuration error: Failed to connect to ".. hostname .." on port ".. port, 4, 255, 0, 0)
+        end
+    )
+
+    socket:on("timeout",
+        function (socket)
+            socket.timeouts = socket.timeouts + 1
+            outputDebugString("[Discord] Timeout error: Failed to connect to ".. hostname .." on port ".. port, 4, 255, 0, 0)
+
+            if socket.timeouts > 2 and socket.options.previousReconnectRetryMS == nil then
+                socket.options.previousReconnectRetryMS = socket.options.reconnectRetryMS
+                socket.options.reconnectRetryMS = 60000
+            end
         end
     )
 
