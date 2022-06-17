@@ -16,12 +16,17 @@ class Bot extends EventEmitter {
         this.channel = null;
         this.connected = false;
         this.reconnectTimer = null;
-        this.client = new Discord.Client();
+        this.client = new Discord.Client({
+            intents: [
+                Discord.Intents.FLAGS.GUILDS, 
+                Discord.Intents.FLAGS.GUILD_MESSAGES,
+            ]
+        });
 
         this.client.on("ready", this._ready.bind(this));
         this.client.on("error", this._error.bind(this));
         this.client.on("disconnect", this._disconnect.bind(this));
-        this.client.on("message", this._message.bind(this));
+        this.client.on("messageCreate", this._message.bind(this));
         this.client.on("guildCreate", this._guildCreate.bind(this));
         this.client.on("guildDelete", this._guildDelete.bind(this));
         this.client.on("channelCreate", this._channelCreate.bind(this));
