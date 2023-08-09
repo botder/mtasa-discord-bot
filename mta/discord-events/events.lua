@@ -13,11 +13,20 @@ function getPlayerName(player)
     return player.name:monochrome()
 end
 
+function sendPlayerCount(correction)
+    correction = correction or 0
+    local player_count = getPlayerCount() + correction
+    local max_players = getMaxPlayers()
+    exports.discord:send("server.player_count", { player_count = player_count, max_players = max_players })
+end
+addEventHandler("onDiscordChannelBound", root, sendPlayerCount)
+
 addEvent("onDiscordUserCommand")
 
 addEventHandler("onPlayerJoin", root,
     function ()
         exports.discord:send("player.join", { player = getPlayerName(source) })
+        sendPlayerCount()
     end
 )
 
@@ -46,6 +55,7 @@ addEventHandler("onPlayerQuit", root,
         else
             exports.discord:send("player.quit", { player = playerName, type = quitType, reason = reason })
         end
+        sendPlayerCount(-1)
     end
 )
 
