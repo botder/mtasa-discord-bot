@@ -10,10 +10,10 @@
   "scripts": {
     "start": "node app.js"
   },
-  "author": "Marek Kulik <marek.kulik@hotmail.com>",
+  "author": "Marek Kulik <me@botder.com>",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^13.8.0",
+    "discord.js": "^14.12.1",
     "emojione": "^4.5.0"
   }
 }
