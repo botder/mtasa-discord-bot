@@ -51,10 +51,16 @@ the relay automatically on crashes.
 ## Notes
 
 ### Discord Bots
+
+> **Note**
+> Make sure your bot account has the `MESSAGE CONTENT INTENT` permission, because otherwise you will only see empty messages coming from Discord (in MTA:SA).
+> 
+> ![image](https://github.com/botder/mtasa-discord-bot/assets/38703318/f0df9eb7-cc40-44f6-8b22-3a7e38cfbc0d)
+
 This application doesn't magically add your bot(s) to your guild(s). You (better said: the guild owner) have to authorize every bot user. Navigate to your bot application on the following page and note the client id:
-> https://discordapp.com/developers/applications/me
+> https://discord.com/developers/applications
 
 Then continue to replace the `client_id` field in the URL below and navigate to that page:
-> https://discordapp.com/api/oauth2/authorize?scope=bot&permissions=0&client_id=<your_client_id_here>
+> https://discord.com/api/oauth2/authorize?scope=bot&permissions=0&client_id=<your_client_id_here>
 
 Proceed by authorizing the bot for the guild of your choice and you're done.
